@@ -1,3 +1,4 @@
+use rand::prelude::*;
 use std::ffi::{c_void, CStr, CString};
 use std::os::raw::c_char;
 use std::ptr;
@@ -5,8 +6,9 @@ use std::rc::Rc;
 
 use gdx::g2d::batcher::PolygonBatch;
 use gdx::g2d::ortho_cam::OrthoCamera;
-use gdx::g2d::texture::Texture;
+use gdx::g2d::texture::{ImageData, Texture};
 use gdx::misc::frame_counter::FrameCounter;
+use image::io::Reader;
 use objc::declare::ClassDecl;
 use objc::runtime::*;
 use objc::*;
@@ -14,6 +16,14 @@ use objc::*;
 use glow::*;
 
 pub mod gdx;
+
+#[derive(Debug)]
+struct Sprite {
+  x: f32,
+  y: f32,
+  speed_x: f32,
+  speed_y: f32,
+}
 
 macro_rules! msg_send_ {
   ($obj:expr, $name:ident) => ({
@@ -194,8 +204,7 @@ unsafe fn create_opengl_view(screen_rect: NSRect, _sample_count: i32, high_dpi: 
         let size_ptr = size_ptr as *const NSSize;
         let size = *size_ptr;
 
-        let mut game = MyGame::new();
-        game.resize(size.width as f32, size.height as f32);
+        let game = MyGame::new(size.width as f32, size.height as f32);
         this.set_ivar("game", Box::into_raw(Box::new(game)) as *mut c_void);
         game_ptr = *this.get_ivar("game");
       }
@@ -318,26 +327,95 @@ struct MyGame {
   x: f32,
   width: f32,
   height: f32,
+  fox: Rc<Texture>,
+  sprites: Vec<Sprite>,
+  accumulate: f32,
+}
+pub const UTF8_ENCODING: usize = 4;
+
+pub fn str_to_nsstring(str: &str) -> ObjcId {
+  unsafe {
+    let ns_string: ObjcId = msg_send![class!(NSString), alloc];
+    let ns_string: ObjcId = msg_send![
+        ns_string,
+        initWithBytes: str.as_ptr()
+        length: str.len()
+        encoding: UTF8_ENCODING as ObjcId
+    ];
+    let _: () = msg_send![ns_string, autorelease];
+    ns_string
+  }
+}
+
+pub fn nsstring_to_string(string: ObjcId) -> String {
+  unsafe {
+    let utf8_string: *const std::os::raw::c_uchar = msg_send![string, UTF8String];
+    let utf8_len: usize = msg_send![string, lengthOfBytesUsingEncoding: UTF8_ENCODING];
+    let slice = std::slice::from_raw_parts(utf8_string, utf8_len);
+    std::str::from_utf8_unchecked(slice).to_owned()
+  }
+}
+
+pub fn get_file_path(path: &str) -> String {
+  let path = std::path::Path::new(&path);
+  let path_without_extension = path.with_extension("");
+  let path_without_extension = path_without_extension.to_str().unwrap();
+  let extension = path.extension().unwrap_or_default().to_str().unwrap();
+
+  unsafe {
+    let main_bundle: ObjcId = msg_send![class!(NSBundle), mainBundle];
+    let resource = str_to_nsstring(path_without_extension);
+    let type_ = str_to_nsstring(extension);
+    let file_path: ObjcId = msg_send![main_bundle, pathForResource:resource ofType:type_];
+    return nsstring_to_string(file_path);
+  }
 }
 
 impl MyGame {
-  pub fn new() -> Self {
+  pub fn new(width: f32, height: f32) -> Self {
     let gl = unsafe {
       let gl = Context::from_loader_function(|s| get_proc_address(s.as_ptr()));
       gl
     };
     let gl = Rc::new(gl);
-    let white = Texture::new_white_texture(&gl);
     let mut batch = PolygonBatch::create(&gl);
     batch.set_y_down(true);
 
-    let mut camera = gdx::g2d::ortho_cam::OrthoCamera::new(100., 100., 100., 100.);
-    camera.set_position(50., 50.);
+    let mut camera = gdx::g2d::ortho_cam::OrthoCamera::new(width, height, width, height);
+    camera.set_position(width / 2., height / 2.);
     camera.set_y_down(true);
     camera.update();
 
+    let fox = {
+      Reader::open(get_file_path("fox.png"))
+        .unwrap()
+        .decode()
+        .unwrap()
+    };
+    let fox = Texture::new(
+      &gl,
+      ImageData {
+        width: fox.width(),
+        height: fox.height(),
+        data: fox.as_rgba8().unwrap(),
+      },
+    );
+    let white = Texture::new_white_texture(&gl);
+
     unsafe {
       gl.clear_color(0.5, 0.8, 0.2, 1.);
+    }
+
+    let mut sprites = Vec::<Sprite>::new();
+    let mut rng = rand::thread_rng();
+
+    for _i in 0..30000 {
+      sprites.push(Sprite {
+        x: rng.gen::<f32>() * width,
+        y: rng.gen::<f32>() * height,
+        speed_x: rng.gen::<f32>() * width - width / 2.,
+        speed_y: rng.gen::<f32>() * height - height / 2.,
+      });
     }
 
     Self {
@@ -347,12 +425,16 @@ impl MyGame {
       camera,
       frame_counter: FrameCounter::new(),
       x: 0.,
-      width: 0.,
-      height: 0.,
+      width,
+      height,
+      fox,
+      sprites,
+      accumulate: 0.,
     }
   }
 
-  fn resize(&mut self, width: f32, height: f32) {
+  #[allow(dead_code)]
+  pub fn resize(&mut self, width: f32, height: f32) {
     self.camera.resize(width, height, width, height);
     self.camera.set_position(width / 2., height / 2.);
     self.camera.update();
@@ -369,10 +451,47 @@ impl MyGame {
       self.x = -100.;
     }
 
+    self.accumulate += delta;
+    if self.accumulate >= 1. {
+      println!(
+        "FPS: {}, draw calls: {} for {} sprites",
+        self.frame_counter.fps(),
+        self.batch.get_draw_calls(),
+        self.sprites.len()
+      );
+      self.accumulate = 0.;
+    }
+
     self.gl.clear(COLOR_BUFFER_BIT);
     self.batch.set_projection(&self.camera.combined);
     self.batch.begin();
-    self.batch.draw(&self.white, self.x, 0., 100., 100.);
+    // self.batch.draw(&self.white, self.x, 0., 100., 100.);
+    // self.batch.draw(&self.fox, 50., 50., 100., 100.);
+    for sprite in &mut self.sprites {
+      sprite.x += sprite.speed_x * delta;
+      sprite.y += sprite.speed_y * delta;
+      if sprite.x >= self.width {
+        sprite.x = self.width;
+        sprite.speed_x = -sprite.speed_x;
+      } else if sprite.x <= 0. {
+        sprite.x = 0.;
+        sprite.speed_x = -sprite.speed_x;
+      }
+      if sprite.y >= self.height {
+        sprite.y = self.height;
+        sprite.speed_y = -sprite.speed_y;
+      } else if sprite.y <= 0. {
+        sprite.y = 0.;
+        sprite.speed_y = -sprite.speed_y;
+      }
+      self.batch.draw(
+        &self.fox,
+        sprite.x - 30. / 2.,
+        sprite.y - 30. / 2.,
+        30.,
+        30.,
+      );
+    }
     self.batch.end();
   }
 }
@@ -381,7 +500,7 @@ impl MyGame {
 pub extern "C" fn start_app() {
   unsafe {
     let argc = 1;
-    let mut argv = b"Miniquad\0" as *const u8 as *mut i8;
+    let mut argv = b"Test Rust\0" as *const u8 as *mut i8;
 
     let class: ObjcId = msg_send!(define_app_delegate(), class);
     let class_string = NSStringFromClass(class as _);

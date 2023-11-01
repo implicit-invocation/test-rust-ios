@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		D72062332AF204CE007940C4 /* fox.png in Resources */ = {isa = PBXBuildFile; fileRef = D72062312AF20496007940C4 /* fox.png */; };
 		D7FB2B732AEF65C400C73EC4 /* test_rust_iosApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7FB2B722AEF65C400C73EC4 /* test_rust_iosApp.swift */; };
 		D7FB2B772AEF65C500C73EC4 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = D7FB2B762AEF65C500C73EC4 /* Assets.xcassets */; };
 		D7FB2B7A2AEF65C500C73EC4 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = D7FB2B792AEF65C500C73EC4 /* Preview Assets.xcassets */; };
@@ -35,6 +36,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		D72062312AF20496007940C4 /* fox.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = fox.png; sourceTree = "<group>"; };
 		D7FB2B6F2AEF65C400C73EC4 /* test-rust-ios.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "test-rust-ios.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		D7FB2B722AEF65C400C73EC4 /* test_rust_iosApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = test_rust_iosApp.swift; sourceTree = "<group>"; };
 		D7FB2B762AEF65C500C73EC4 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -77,6 +79,14 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		D72062302AF20496007940C4 /* assets */ = {
+			isa = PBXGroup;
+			children = (
+				D72062312AF20496007940C4 /* fox.png */,
+			);
+			path = assets;
+			sourceTree = "<group>";
+		};
 		D7FB2B662AEF65C400C73EC4 = {
 			isa = PBXGroup;
 			children = (
@@ -103,6 +113,7 @@
 		D7FB2B712AEF65C400C73EC4 /* test-rust-ios */ = {
 			isa = PBXGroup;
 			children = (
+				D72062302AF20496007940C4 /* assets */,
 				D7FB2B722AEF65C400C73EC4 /* test_rust_iosApp.swift */,
 				D7FB2B762AEF65C500C73EC4 /* Assets.xcassets */,
 				D7FB2B782AEF65C500C73EC4 /* Preview Content */,
@@ -249,6 +260,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D72062332AF204CE007940C4 /* fox.png in Resources */,
 				D7FB2B7A2AEF65C500C73EC4 /* Preview Assets.xcassets in Resources */,
 				D7FB2B772AEF65C500C73EC4 /* Assets.xcassets in Resources */,
 			);
@@ -453,6 +465,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
+				COMPRESS_PNG_FILES = NO;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"test-rust-ios/Preview Content\"";
 				DEVELOPMENT_TEAM = LQGSB5N7A3;
@@ -472,6 +485,7 @@
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.dongbat.test.test-rust-ios";
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRIP_PNG_TEXT = NO;
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SUPPORTS_MACCATALYST = NO;
 				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = YES;
@@ -488,6 +502,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
+				COMPRESS_PNG_FILES = NO;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"test-rust-ios/Preview Content\"";
 				DEVELOPMENT_TEAM = LQGSB5N7A3;
@@ -507,6 +522,7 @@
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.dongbat.test.test-rust-ios";
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRIP_PNG_TEXT = NO;
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SUPPORTS_MACCATALYST = NO;
 				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = YES;

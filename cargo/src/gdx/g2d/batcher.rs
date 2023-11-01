@@ -175,10 +175,7 @@ impl PolygonBatch {
 
     match &self.last_texture {
       Some(texture) => {
-        if self.last_texture.is_none() || self.last_texture.as_deref().unwrap() != texture.as_ref()
-        {
-          texture.bind();
-        }
+        texture.bind();
         self.mesh.draw(&self.shader, TRIANGLES);
         self.draw_calls += 1;
 
