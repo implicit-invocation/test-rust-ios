@@ -7,7 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		D72062332AF204CE007940C4 /* fox.png in Resources */ = {isa = PBXBuildFile; fileRef = D72062312AF20496007940C4 /* fox.png */; };
+		D72062372AF4EA9B007940C4 /* fox.png in Resources */ = {isa = PBXBuildFile; fileRef = D72062312AF20496007940C4 /* fox.png */; };
 		D7FB2B732AEF65C400C73EC4 /* test_rust_iosApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7FB2B722AEF65C400C73EC4 /* test_rust_iosApp.swift */; };
 		D7FB2B772AEF65C500C73EC4 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = D7FB2B762AEF65C500C73EC4 /* Assets.xcassets */; };
 		D7FB2B7A2AEF65C500C73EC4 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = D7FB2B792AEF65C500C73EC4 /* Preview Assets.xcassets */; };
@@ -260,7 +260,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				D72062332AF204CE007940C4 /* fox.png in Resources */,
+				D72062372AF4EA9B007940C4 /* fox.png in Resources */,
 				D7FB2B7A2AEF65C500C73EC4 /* Preview Assets.xcassets in Resources */,
 				D7FB2B772AEF65C500C73EC4 /* Assets.xcassets in Resources */,
 			);

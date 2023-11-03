@@ -1,17 +1,26 @@
 [package]
-name = "cargo"
+name = "my_game"
 version = "0.1.0"
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [lib]
-name = "greetings"
-crate-type = ["staticlib", "cdylib"]
+name = "my_game"
+crate-type = ["staticlib", "cdylib", "rlib"]
 
 [dependencies]
 const_format = "0.2.32"
 glow = "0.13.0"
 image = "0.24.7"
-objc = "0.2.7"
 rand = "0.8.5"
+
+[target.'cfg(any(target_os = "macos", target_os = "ios"))'.dependencies]
+objc = "0.2.7"
+
+[target.'cfg(any(target_os = "macos", target_os = "windows"))'.dependencies]
+glutin = "0.26.0"
+
+[[bin]]
+name = "main"
+
