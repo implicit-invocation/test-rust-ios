@@ -104,8 +104,6 @@ pub extern "C" fn start_app() {
         }
 
         gl.clear(COLOR_BUFFER_BIT);
-
-        gl.clear(COLOR_BUFFER_BIT);
         batch.set_projection(&camera.combined);
         batch.begin();
         for sprite in &mut sprites {
