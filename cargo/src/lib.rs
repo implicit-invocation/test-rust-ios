@@ -5,7 +5,6 @@ use std::ptr;
 use std::rc::Rc;
 
 use gdx::g2d::batcher::PolygonBatch;
-use gdx::g2d::ortho_cam::OrthoCamera;
 use gdx::g2d::texture::{ImageData, Texture};
 use gdx::misc::frame_counter::FrameCounter;
 use image::io::Reader;
@@ -204,12 +203,13 @@ unsafe fn create_opengl_view(screen_rect: NSRect, _sample_count: i32, high_dpi: 
         let size_ptr = size_ptr as *const NSSize;
         let size = *size_ptr;
 
-        let game = MyGame::new(size.width as f32, size.height as f32);
+        let f = RUN_ARGS.take().unwrap();
+        let game = AppHandler::new(size.width as f32, size.height as f32, f);
         this.set_ivar("game", Box::into_raw(Box::new(game)) as *mut c_void);
         game_ptr = *this.get_ivar("game");
       }
 
-      let game = &mut *(game_ptr as *mut MyGame);
+      let game = &mut *(game_ptr as *mut AppHandler);
       game.update();
     };
   }
@@ -318,18 +318,12 @@ extern "C" {
 }
 pub const NIL: ObjcId = 0 as ObjcId;
 
-struct MyGame {
+struct AppHandler {
   gl: Rc<Context>,
   frame_counter: FrameCounter,
-  white: Rc<Texture>,
-  batch: PolygonBatch,
-  camera: OrthoCamera,
-  x: f32,
   width: f32,
   height: f32,
-  fox: Rc<Texture>,
-  sprites: Vec<Sprite>,
-  accumulate: f32,
+  update: Option<Box<dyn FnMut(&Rc<Context>, f32) -> ()>>,
 }
 pub const UTF8_ENCODING: usize = 4;
 
@@ -371,134 +365,55 @@ pub fn get_file_path(path: &str) -> String {
   }
 }
 
-impl MyGame {
-  pub fn new(width: f32, height: f32) -> Self {
+impl AppHandler {
+  pub fn new<F>(width: f32, height: f32, f: F) -> Self
+  where
+    F: FnOnce(&mut AppHandler, &Rc<Context>) -> () + 'static,
+  {
     let gl = unsafe {
       let gl = Context::from_loader_function(|s| get_proc_address(s.as_ptr()));
       gl
     };
     let gl = Rc::new(gl);
-    let mut batch = PolygonBatch::create(&gl);
-    batch.set_y_down(true);
 
-    let mut camera = gdx::g2d::ortho_cam::OrthoCamera::new(width, height, width, height);
-    camera.set_position(width / 2., height / 2.);
-    camera.set_y_down(true);
-    camera.update();
-
-    let fox = {
-      Reader::open(get_file_path("fox.png"))
-        .unwrap()
-        .decode()
-        .unwrap()
-    };
-    let fox = Texture::new(
-      &gl,
-      ImageData {
-        width: fox.width(),
-        height: fox.height(),
-        data: fox.as_rgba8().unwrap(),
-      },
-    );
-    let white = Texture::new_white_texture(&gl);
-
-    unsafe {
-      gl.clear_color(0.5, 0.8, 0.2, 1.);
-    }
-
-    let mut sprites = Vec::<Sprite>::new();
-    let mut rng = rand::thread_rng();
-
-    for _i in 0..30000 {
-      sprites.push(Sprite {
-        x: rng.gen::<f32>() * width,
-        y: rng.gen::<f32>() * height,
-        speed_x: rng.gen::<f32>() * width - width / 2.,
-        speed_y: rng.gen::<f32>() * height - height / 2.,
-      });
-    }
-
-    Self {
-      gl,
-      white,
-      batch,
-      camera,
+    let mut handler = Self {
+      gl: gl.clone(),
       frame_counter: FrameCounter::new(),
-      x: 0.,
       width,
       height,
-      fox,
-      sprites,
-      accumulate: 0.,
-    }
+      update: None,
+    };
+    f(&mut handler, &gl);
+    handler
   }
 
-  #[allow(dead_code)]
-  pub fn resize(&mut self, width: f32, height: f32) {
-    self.camera.resize(width, height, width, height);
-    self.camera.set_position(width / 2., height / 2.);
-    self.camera.update();
+  // TODO: resize logic
 
-    self.width = width;
-    self.height = height;
+  fn set_update_fn<F>(&mut self, update: F)
+  where
+    F: FnMut(&Rc<Context>, f32) -> () + 'static,
+  {
+    self.update = Some(Box::new(update));
   }
 
   unsafe fn update(&mut self) {
     let delta = self.frame_counter.update();
 
-    self.x += delta * 200.;
-    if self.x > self.width {
-      self.x = -100.;
+    match self.update {
+      Some(ref mut update) => update(&self.gl, delta),
+      None => (),
     }
-
-    self.accumulate += delta;
-    if self.accumulate >= 1. {
-      println!(
-        "FPS: {}, draw calls: {} for {} sprites",
-        self.frame_counter.fps(),
-        self.batch.get_draw_calls(),
-        self.sprites.len()
-      );
-      self.accumulate = 0.;
-    }
-
-    self.gl.clear(COLOR_BUFFER_BIT);
-    self.batch.set_projection(&self.camera.combined);
-    self.batch.begin();
-    // self.batch.draw(&self.white, self.x, 0., 100., 100.);
-    // self.batch.draw(&self.fox, 50., 50., 100., 100.);
-    for sprite in &mut self.sprites {
-      sprite.x += sprite.speed_x * delta;
-      sprite.y += sprite.speed_y * delta;
-      if sprite.x >= self.width {
-        sprite.x = self.width;
-        sprite.speed_x = -sprite.speed_x;
-      } else if sprite.x <= 0. {
-        sprite.x = 0.;
-        sprite.speed_x = -sprite.speed_x;
-      }
-      if sprite.y >= self.height {
-        sprite.y = self.height;
-        sprite.speed_y = -sprite.speed_y;
-      } else if sprite.y <= 0. {
-        sprite.y = 0.;
-        sprite.speed_y = -sprite.speed_y;
-      }
-      self.batch.draw(
-        &self.fox,
-        sprite.x - 30. / 2.,
-        sprite.y - 30. / 2.,
-        30.,
-        30.,
-      );
-    }
-    self.batch.end();
   }
 }
 
-#[no_mangle]
-pub extern "C" fn start_app() {
+static mut RUN_ARGS: Option<Box<dyn FnOnce(&mut AppHandler, &Rc<Context>) -> ()>> = None;
+
+fn start<F>(init_func: F)
+where
+  F: FnOnce(&mut AppHandler, &Rc<Context>) -> () + 'static,
+{
   unsafe {
+    RUN_ARGS = Some(Box::new(init_func));
     let argc = 1;
     let mut argv = b"Test Rust\0" as *const u8 as *mut i8;
 
@@ -507,4 +422,100 @@ pub extern "C" fn start_app() {
 
     UIApplicationMain(argc, &mut argv, NIL, class_string);
   }
+}
+
+fn start_fox_mark() {
+  unsafe {
+    start(|app, gl| {
+      let width = app.width;
+      let height = app.height;
+      let mut batch = PolygonBatch::create(&gl);
+      batch.set_y_down(true);
+
+      let mut camera = gdx::g2d::ortho_cam::OrthoCamera::new(width, height, width, height);
+      camera.set_position(width / 2., height / 2.);
+      camera.set_y_down(true);
+      camera.update();
+
+      let fox = {
+        Reader::open(get_file_path("fox.png"))
+          .unwrap()
+          .decode()
+          .unwrap()
+      };
+      let fox = Texture::new(
+        &gl,
+        ImageData {
+          width: fox.width(),
+          height: fox.height(),
+          data: fox.as_rgba8().unwrap(),
+        },
+      );
+
+      gl.clear_color(0.5, 0.8, 0.2, 1.);
+
+      let mut sprites = Vec::<Sprite>::new();
+      let mut rng = rand::thread_rng();
+
+      for _i in 0..10000 {
+        sprites.push(Sprite {
+          x: rng.gen::<f32>() * width,
+          y: rng.gen::<f32>() * height,
+          speed_x: rng.gen::<f32>() * width - width / 2.,
+          speed_y: rng.gen::<f32>() * height - height / 2.,
+        });
+      }
+
+      let draw_width = 50.;
+      let draw_height = 50.;
+      let mut accumulate = 0.;
+      let mut frame_counter = FrameCounter::new();
+
+      app.set_update_fn(move |gl, delta| {
+        accumulate += delta;
+        frame_counter.update();
+        if accumulate >= 1. {
+          println!("fps: {}", frame_counter.fps());
+          accumulate = 0.;
+        }
+
+        gl.clear(COLOR_BUFFER_BIT);
+
+        gl.clear(COLOR_BUFFER_BIT);
+        batch.set_projection(&camera.combined);
+        batch.begin();
+        for sprite in &mut sprites {
+          sprite.x += sprite.speed_x * delta;
+          sprite.y += sprite.speed_y * delta;
+          if sprite.x >= width {
+            sprite.x = width;
+            sprite.speed_x = -sprite.speed_x;
+          } else if sprite.x <= 0. {
+            sprite.x = 0.;
+            sprite.speed_x = -sprite.speed_x;
+          }
+          if sprite.y >= height {
+            sprite.y = height;
+            sprite.speed_y = -sprite.speed_y;
+          } else if sprite.y <= 0. {
+            sprite.y = 0.;
+            sprite.speed_y = -sprite.speed_y;
+          }
+          batch.draw(
+            &fox,
+            sprite.x - draw_width / 2.,
+            sprite.y - draw_height / 2.,
+            draw_width,
+            draw_height,
+          );
+        }
+        batch.end();
+      });
+    });
+  }
+}
+
+#[no_mangle]
+pub extern "C" fn start_app() {
+  start_fox_mark();
 }
