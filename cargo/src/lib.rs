@@ -38,7 +38,10 @@ where
   F: FnOnce(&mut dyn CommonAppHandler, &Rc<Context>) -> () + 'static,
 {
   #[cfg(target_os = "ios")]
-  ios::start_ios(init_func);
+  {
+    println!("start ios");
+    ios::start_ios(init_func);
+  }
 
   #[cfg(not(target_os = "ios"))]
   glutin::start_glutin(init_func);
@@ -78,7 +81,7 @@ pub extern "C" fn start_app() {
       let mut sprites = Vec::<Sprite>::new();
       let mut rng = rand::thread_rng();
 
-      for _i in 0..100 {
+      for _i in 0..40000 {
         sprites.push(Sprite {
           x: rng.gen::<f32>() * width,
           y: rng.gen::<f32>() * height,
@@ -87,8 +90,8 @@ pub extern "C" fn start_app() {
         });
       }
 
-      let draw_width = 50.;
-      let draw_height = 50.;
+      let draw_width = 20.;
+      let draw_height = 20.;
       let mut accumulate = 0.;
       let mut frame_counter = FrameCounter::new();
 

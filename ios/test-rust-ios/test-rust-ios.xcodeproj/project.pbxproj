@@ -8,13 +8,13 @@
 
 /* Begin PBXBuildFile section */
 		D72062372AF4EA9B007940C4 /* fox.png in Resources */ = {isa = PBXBuildFile; fileRef = D72062312AF20496007940C4 /* fox.png */; };
+		D7A228372AF565C500BFFC37 /* libmy_game.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D7A228362AF565A500BFFC37 /* libmy_game.a */; };
 		D7FB2B732AEF65C400C73EC4 /* test_rust_iosApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7FB2B722AEF65C400C73EC4 /* test_rust_iosApp.swift */; };
 		D7FB2B772AEF65C500C73EC4 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = D7FB2B762AEF65C500C73EC4 /* Assets.xcassets */; };
 		D7FB2B7A2AEF65C500C73EC4 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = D7FB2B792AEF65C500C73EC4 /* Preview Assets.xcassets */; };
 		D7FB2B842AEF65C600C73EC4 /* test_rust_iosTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7FB2B832AEF65C600C73EC4 /* test_rust_iosTests.swift */; };
 		D7FB2B8E2AEF65C600C73EC4 /* test_rust_iosUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7FB2B8D2AEF65C600C73EC4 /* test_rust_iosUITests.swift */; };
 		D7FB2B902AEF65C600C73EC4 /* test_rust_iosUITestsLaunchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7FB2B8F2AEF65C600C73EC4 /* test_rust_iosUITestsLaunchTests.swift */; };
-		D7FB2B9E2AEF666300C73EC4 /* libgreetings.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D7FB2B9D2AEF661600C73EC4 /* libgreetings.a */; };
 		D7FB2BA02AEF667700C73EC4 /* libresolv.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = D7FB2B9F2AEF666F00C73EC4 /* libresolv.tbd */; };
 /* End PBXBuildFile section */
 
@@ -37,6 +37,7 @@
 
 /* Begin PBXFileReference section */
 		D72062312AF20496007940C4 /* fox.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = fox.png; sourceTree = "<group>"; };
+		D7A228362AF565A500BFFC37 /* libmy_game.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libmy_game.a; path = "../../cargo/target/aarch64-apple-ios/release/libmy_game.a"; sourceTree = "<group>"; };
 		D7FB2B6F2AEF65C400C73EC4 /* test-rust-ios.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "test-rust-ios.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		D7FB2B722AEF65C400C73EC4 /* test_rust_iosApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = test_rust_iosApp.swift; sourceTree = "<group>"; };
 		D7FB2B762AEF65C500C73EC4 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -57,8 +58,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				D7FB2B9E2AEF666300C73EC4 /* libgreetings.a in Frameworks */,
 				D7FB2BA02AEF667700C73EC4 /* libresolv.tbd in Frameworks */,
+				D7A228372AF565C500BFFC37 /* libmy_game.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -149,6 +150,7 @@
 		D7FB2B9C2AEF661600C73EC4 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				D7A228362AF565A500BFFC37 /* libmy_game.a */,
 				D7FB2B9F2AEF666F00C73EC4 /* libresolv.tbd */,
 				D7FB2B9D2AEF661600C73EC4 /* libgreetings.a */,
 			);
