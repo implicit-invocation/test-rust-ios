@@ -1,12 +1,8 @@
 use gdx::{
-  g2d::{
-    batcher::PolygonBatch,
-    texture::{ImageData, Texture},
-  },
+  g2d::{batcher::PolygonBatch, texture::Texture},
   misc::frame_counter::FrameCounter,
 };
 use glow::*;
-use image::io::Reader;
 use rand::Rng;
 use std::rc::Rc;
 
@@ -61,20 +57,7 @@ pub extern "C" fn start_app() {
       camera.set_y_down(true);
       camera.update();
 
-      let fox = {
-        Reader::open(app.get_file_path("fox.png"))
-          .unwrap()
-          .decode()
-          .unwrap()
-      };
-      let fox = Texture::new(
-        &gl,
-        ImageData {
-          width: fox.width(),
-          height: fox.height(),
-          data: fox.as_rgba8().unwrap(),
-        },
-      );
+      let fox = Texture::load_from_file(&gl, app.get_file_path("fox.png"));
 
       gl.clear_color(0.5, 0.8, 0.2, 1.);
 

@@ -26,6 +26,16 @@ impl Texture {
     };
     Self::new(gl, data)
   }
+  pub fn load_from_file(gl: &Rc<Context>, file_name: String) -> Rc<Self> {
+    let img = image::open(file_name).unwrap();
+    let data = img.as_rgba8().unwrap();
+    let data = ImageData {
+      width: data.width(),
+      height: data.height(),
+      data: data.as_raw(),
+    };
+    Self::new(gl, data)
+  }
   pub fn new(gl: &Rc<Context>, data: ImageData) -> Rc<Self> {
     unsafe {
       let texture = gl.create_texture().unwrap();
