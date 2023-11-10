@@ -49,76 +49,76 @@ where
 pub extern "C" fn start_app() {
   unsafe {
     init_game(|app, gl| {
-      init_js_runtime(gl);
-      let width = app.get_width();
-      let height = app.get_height();
-      let mut batch = PolygonBatch::create(&gl);
-      batch.set_y_down(true);
+      init_js_runtime(app, gl);
+      // let width = app.get_width();
+      // let height = app.get_height();
+      // let mut batch = PolygonBatch::create(&gl);
+      // batch.set_y_down(true);
 
-      let mut camera = crate::gdx::g2d::ortho_cam::OrthoCamera::new(width, height, width, height);
-      camera.set_position(width / 2., height / 2.);
-      camera.set_y_down(true);
-      camera.update();
+      // let mut camera = crate::gdx::g2d::ortho_cam::OrthoCamera::new(width, height, width, height);
+      // camera.set_position(width / 2., height / 2.);
+      // camera.set_y_down(true);
+      // camera.update();
 
-      let fox = Texture::load_from_file(&gl, app.get_file_path("fox.png"));
+      // let fox = Texture::load_from_file(&gl, app.get_file_path("fox.png"));
 
-      gl.clear_color(0.5, 0.8, 0.2, 1.);
+      // gl.clear_color(0.5, 0.8, 0.2, 1.);
 
-      let mut sprites = Vec::<Sprite>::new();
-      let mut rng = rand::thread_rng();
+      // let mut sprites = Vec::<Sprite>::new();
+      // let mut rng = rand::thread_rng();
 
-      for _i in 0..40000 {
-        sprites.push(Sprite {
-          x: rng.gen::<f32>() * width,
-          y: rng.gen::<f32>() * height,
-          speed_x: rng.gen::<f32>() * width - width / 2.,
-          speed_y: rng.gen::<f32>() * height - height / 2.,
-        });
-      }
+      // for _i in 0..40000 {
+      //   sprites.push(Sprite {
+      //     x: rng.gen::<f32>() * width,
+      //     y: rng.gen::<f32>() * height,
+      //     speed_x: rng.gen::<f32>() * width - width / 2.,
+      //     speed_y: rng.gen::<f32>() * height - height / 2.,
+      //   });
+      // }
 
-      let draw_width = 20.;
-      let draw_height = 20.;
-      let mut accumulate = 0.;
-      let mut frame_counter = FrameCounter::new();
+      // let draw_width = 20.;
+      // let draw_height = 20.;
+      // let mut accumulate = 0.;
+      // let mut frame_counter = FrameCounter::new();
 
-      app.set_update_fn(Box::new(move |gl, delta| {
-        accumulate += delta;
-        frame_counter.update();
-        if accumulate >= 1. {
-          println!("fps: {}", frame_counter.fps());
-          accumulate = 0.;
-        }
+      // app.set_update_fn(Box::new(move |gl, delta| {
+      //   accumulate += delta;
+      //   frame_counter.update();
+      //   if accumulate >= 1. {
+      //     println!("fps: {}", frame_counter.fps());
+      //     accumulate = 0.;
+      //   }
 
-        gl.clear(COLOR_BUFFER_BIT);
-        batch.set_projection(&camera.combined);
-        batch.begin();
-        for sprite in &mut sprites {
-          sprite.x += sprite.speed_x * delta;
-          sprite.y += sprite.speed_y * delta;
-          if sprite.x >= width {
-            sprite.x = width;
-            sprite.speed_x = -sprite.speed_x;
-          } else if sprite.x <= 0. {
-            sprite.x = 0.;
-            sprite.speed_x = -sprite.speed_x;
-          }
-          if sprite.y >= height {
-            sprite.y = height;
-            sprite.speed_y = -sprite.speed_y;
-          } else if sprite.y <= 0. {
-            sprite.y = 0.;
-            sprite.speed_y = -sprite.speed_y;
-          }
-          batch.draw(
-            &fox,
-            sprite.x - draw_width / 2.,
-            sprite.y - draw_height / 2.,
-            draw_width,
-            draw_height,
-          );
-        }
-        batch.end();
-      }));
+      //   gl.clear(COLOR_BUFFER_BIT);
+      //   batch.set_projection(&camera.combined);
+      //   batch.begin();
+      //   for sprite in &mut sprites {
+      //     sprite.x += sprite.speed_x * delta;
+      //     sprite.y += sprite.speed_y * delta;
+      //     if sprite.x >= width {
+      //       sprite.x = width;
+      //       sprite.speed_x = -sprite.speed_x;
+      //     } else if sprite.x <= 0. {
+      //       sprite.x = 0.;
+      //       sprite.speed_x = -sprite.speed_x;
+      //     }
+      //     if sprite.y >= height {
+      //       sprite.y = height;
+      //       sprite.speed_y = -sprite.speed_y;
+      //     } else if sprite.y <= 0. {
+      //       sprite.y = 0.;
+      //       sprite.speed_y = -sprite.speed_y;
+      //     }
+      //     batch.draw(
+      //       &fox,
+      //       sprite.x - draw_width / 2.,
+      //       sprite.y - draw_height / 2.,
+      //       draw_width,
+      //       draw_height,
+      //     );
+      //   }
+      //   batch.end();
+      // }));
     });
   }
 }

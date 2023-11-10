@@ -1,5 +1,7 @@
-use rquickjs::{bind, Context, Function, Object, Runtime};
+use rquickjs::{bind, Context, Function, Object, Persistent, Runtime};
 use std::rc::Rc;
+
+use crate::CommonAppHandler;
 
 #[bind(object)]
 #[quickjs(bare)]
@@ -41,11 +43,11 @@ fn print_obj(obj: Object) {
   println!("{:?}", obj);
 }
 
-pub fn init_js_runtime(gl: &Rc<glow::Context>) {
+pub fn init_js_runtime(app: &mut dyn CommonAppHandler, gl: &Rc<glow::Context>) {
   let js_gl_context = glow_js::JsContext::new(gl);
   let rt = Runtime::new().unwrap();
   let ctx = Context::full(&rt).unwrap();
-  ctx.with(|ctx| {
+  let update = ctx.with(|ctx| {
     let _ = ctx.globals().init_def::<GlowJs>().unwrap();
     let _ = ctx
       .globals()
@@ -60,7 +62,15 @@ pub fn init_js_runtime(gl: &Rc<glow::Context>) {
         r#"
     export const start = (gl) => {
       gl.clearColor(1.0, .2, 0.4, 1.0);
-      gl.clear(gl.COLOR_BUFFER_BIT);
+      let frame = 0;
+      // setTimeout(() => {
+      //   print('Hello from JS!');
+      // }, 1000);
+      return delta => {
+        frame++;
+        print(`Frame: ${frame}. Delta: ${delta}.`);
+        gl.clear(gl.COLOR_BUFFER_BIT);
+      };
     }
 "#,
       )
@@ -68,7 +78,13 @@ pub fn init_js_runtime(gl: &Rc<glow::Context>) {
     unsafe {
       let _ = start_module.eval().unwrap();
       let start: Function = start_module.get("start").unwrap();
-      let _ = start.call::<_, ()>((js_gl_context,));
+      let update: Function = start.call::<_, Function>((js_gl_context,)).unwrap();
+      Persistent::save(ctx, update)
     }
   });
+  app.set_update_fn(Box::new(move |_gl, delta| {
+    ctx.with(|ctx| {
+      let _: () = update.clone().restore(ctx).unwrap().call((delta,)).unwrap();
+    });
+  }));
 }
