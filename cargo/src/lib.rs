@@ -3,10 +3,12 @@ use gdx::{
   misc::frame_counter::FrameCounter,
 };
 use glow::*;
+use js::rt::init_js_runtime;
 use rand::Rng;
 use std::rc::Rc;
 
 pub mod gdx;
+pub mod js;
 
 #[cfg(target_os = "ios")]
 pub mod ios;
@@ -47,6 +49,7 @@ where
 pub extern "C" fn start_app() {
   unsafe {
     init_game(|app, gl| {
+      init_js_runtime(gl);
       let width = app.get_width();
       let height = app.get_height();
       let mut batch = PolygonBatch::create(&gl);
